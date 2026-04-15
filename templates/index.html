@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Traffic Sign Clustering</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        }
+
+        /* 🔥 Background Animation */
+        .bg-animation span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            animation: animate 20s linear infinite;
+            bottom: -150px;
+            border-radius: 50%;
+        }
+
+        .bg-animation span:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .bg-animation span:nth-child(2) { left: 20%; animation-delay: 2s; width: 30px; height: 30px;}
+        .bg-animation span:nth-child(3) { left: 25%; animation-delay: 4s; }
+        .bg-animation span:nth-child(4) { left: 40%; animation-delay: 0s; width: 40px; height: 40px;}
+        .bg-animation span:nth-child(5) { left: 70%; animation-delay: 3s; }
+        .bg-animation span:nth-child(6) { left: 80%; animation-delay: 5s; width: 25px; height: 25px;}
+        .bg-animation span:nth-child(7) { left: 50%; animation-delay: 7s; }
+        .bg-animation span:nth-child(8) { left: 65%; animation-delay: 1s; }
+        .bg-animation span:nth-child(9) { left: 85%; animation-delay: 6s; }
+        .bg-animation span:nth-child(10){ left: 95%; animation-delay: 8s; }
+
+        @keyframes animate {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-1000px) scale(0.5); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 20px;
+            width: 380px;
+            box-shadow: 0px 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(30px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        input[type="file"] {
+            margin: 15px 0;
+            color: white;
+        }
+
+        button {
+            background: #00c6ff;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #0096ff;
+        }
+
+        img {
+            margin-top: 15px;
+            border-radius: 12px;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.9);
+            border-left: 5px solid #00cec9;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #00cec9;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+
+        /* 🔥 Loader */
+        .loader {
+            display: none;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .loader div {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1s infinite;
+        }
+
+        .loader div:nth-child(2) { animation-delay: 0.2s; }
+        .loader div:nth-child(3) { animation-delay: 0.4s; }
+
+        .loader p {
+            color: white;
+            margin-top: 10px;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- Background Animation -->
+<div class="bg-animation">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<div class="container">
+    <div>
+        <h1>🚦 Traffic Sign Clustering</h1>
+
+        <div class="card">
+
+            <form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+                <input type="file" name="image" required>
+                <br>
+                <button type="submit">🚀 Upload & Predict</button>
+            </form>
+
+            <!-- Loader -->
+            <div class="loader" id="loader">
+                <div></div><div></div><div></div>
+                <p>Analyzing traffic sign...</p>
+            </div>
+
+            {% if image %}
+                <h3 style="color:white;">Preview</h3>
+                <img src="{{ image }}" width="200">
+
+                <div class="result-box">
+                    🔍 This looks similar to group <b>{{ cluster }}</b><br>
+                    <span class="badge">Cluster Group: {{ cluster }}</span>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+function showLoader() {
+    document.getElementById("loader").style.display = "block";
+}
+</script>
+
+</body>
+</html>
