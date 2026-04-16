@@ -1,4 +1,6 @@
-streamlit
+flask
 numpy
 opencv-python-headless
 scikit-learn
+matplotlib
+gunicorn
