@@ -1,80 +1,44 @@
-import streamlit as st
-import base64
+from flask import Flask, render_template, request, redirect, url_for
+import os
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
 
-st.set_page_config(layout="wide")
+app = Flask(__name__)
 
-# Background + UI
-st.markdown("""
-<style>
-body {
-    margin: 0;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-}
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-/* Card */
-.card {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(15px);
-    padding: 30px;
-    border-radius: 20px;
-    width: 350px;
-    margin: auto;
-    text-align: center;
-    box-shadow: 0px 20px 50px rgba(0,0,0,0.3);
-    margin-top: 50px;
-}
+# Ensure upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-/* Title */
-.title {
-    text-align:center;
-    color:white;
-    font-size:40px;
-}
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        file = request.files['image']
 
-/* Button */
-button {
-    background: #00c6ff;
-    color: white;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 10px;
-    cursor: pointer;
-}
+        if file:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(filepath)
 
-.result {
-    margin-top: 20px;
-    background: white;
-    padding: 10px;
-    border-radius: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
+            # Read image
+            img = cv2.imread(filepath)
+            img_resized = cv2.resize(img, (64, 64))
+            img_flat = img_resized.flatten().reshape(1, -1)
 
-st.markdown('<div class="title">🚦 Traffic Sign Clustering</div>', unsafe_allow_html=True)
+            # Dummy clustering
+            kmeans = KMeans(n_clusters=5, random_state=0)
+            kmeans.fit(np.random.rand(10, img_flat.shape[1]))
 
-uploaded_file = st.file_uploader("Upload Image")
+            cluster = kmeans.predict(img_flat)[0]
 
-if uploaded_file:
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    img = cv2.imdecode(file_bytes, 1)
+            image_url = url_for('static', filename='uploads/' + file.filename)
 
-    st.image(img, width=200)
+            return render_template('index.html', image=image_url, cluster=cluster)
 
-    with st.spinner("Analyzing..."):
-        img_resized = cv2.resize(img, (64,64))
-        img_flat = img_resized.flatten().reshape(1,-1)
+    return render_template('index.html', image=None)
 
-        kmeans = KMeans(n_clusters=5)
-        kmeans.fit(np.random.rand(10, img_flat.shape[1]))
-
-        cluster = kmeans.predict(img_flat)[0]
-
-    st.markdown(f"""
-    <div class="result">
-    🔍 This looks similar to group <b>{cluster}</b><br>
-    📌 Cluster Group: <b>{cluster}</b>
-    </div>
-    """, unsafe_allow_html=True)
+# 🔥 Render deployment fix
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
